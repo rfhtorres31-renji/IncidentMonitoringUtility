@@ -22,6 +22,11 @@ namespace IncidentUtility
         private Timer? DueActionPlanMonitoringTimer;
         private System.Windows.Forms.Timer? displayTimer;
         private int countdown = 15;
+        private bool _incidentMonitoringRunning = false;
+        private bool _actionPlanMonitoringSafe = false;
+        private bool _officerResponseMonitoringSafe = false;
+        private bool _checkDueActionPlanSafe = false;
+        private bool _dueActionPlanMonitoringSafe = false;
 
         public Form1()
         {
@@ -284,11 +289,11 @@ namespace IncidentUtility
             await DueActionPlanMonitoring();
 
             // These four are running on .NET Thread pools (Shared Workers running on the background Threads)
-            incidentMonitoringTimer = new Timer(async _ => await IncidentMonitoring(), null, 0, 15000);
-            ActionPlanMonitoringTimer = new Timer(async _ => await ActionPlanMonitoring(), null, 0, 15000);
-            OfficerResponseMonitoringTimer = new Timer(async _ => await OfficerResponseMonitoring(), null, 0, 15000);
-            CheckDueActionPlanTimer = new Timer(async _ => await CheckDueActionPlan(), null, 0, 15000);
-            DueActionPlanMonitoringTimer = new Timer(async _ => await DueActionPlanMonitoring(), null, 0, 15000);
+            incidentMonitoringTimer = new Timer(async _ => await IncidentMonitoringRunningSafe(), null, 0, 15000);
+            ActionPlanMonitoringTimer = new Timer(async _ => await ActionPlanMonitoringSafe(), null, 0, 15000);
+            OfficerResponseMonitoringTimer = new Timer(async _ => await OfficerResponseMonitoringSafe(), null, 0, 15000);
+            CheckDueActionPlanTimer = new Timer(async _ => await CheckDueActionPlanSafe(), null, 0, 15000);
+            DueActionPlanMonitoringTimer = new Timer(async _ => await DueActionPlanMonitoringSafe(), null, 0, 15000);
 
             // Setup display timer (for clock)
             displayTimer = new System.Windows.Forms.Timer();
@@ -350,6 +355,23 @@ namespace IncidentUtility
                         );
                     }
                 });
+            }
+        }
+
+
+        private async Task IncidentMonitoringRunningSafe()
+        {
+            if (_incidentMonitoringRunning) return;
+            _incidentMonitoringRunning = false;
+
+
+            try
+            {
+                await IncidentMonitoring();
+            }
+            finally
+            {
+                _incidentMonitoringRunning = false;
             }
         }
 
@@ -422,10 +444,25 @@ namespace IncidentUtility
                             row.DefaultCellStyle.ForeColor = Color.Black;
                             row.DefaultCellStyle.Font = new Font("Segoe UI", 9, FontStyle.Regular);
                         }
-
                     }
                 });
 
+            }
+        }
+
+        private async Task ActionPlanMonitoringSafe()
+        {
+            if (_actionPlanMonitoringSafe) return;
+            _actionPlanMonitoringSafe = false;
+
+
+            try
+            {
+                await ActionPlanMonitoring();
+            }
+            finally
+            {
+                _actionPlanMonitoringSafe = false;
             }
         }
 
@@ -487,6 +524,21 @@ namespace IncidentUtility
             }
         }
 
+        private async Task OfficerResponseMonitoringSafe()
+        {
+            if (_officerResponseMonitoringSafe) return;
+            _officerResponseMonitoringSafe = false;
+
+
+            try
+            {
+                await OfficerResponseMonitoring();
+            }
+            finally
+            {
+                _officerResponseMonitoringSafe = false;
+            }
+        }
 
         // Check Action Plans that is already in Due Date and send email notification to the assigning maintenance staff
         private async Task CheckDueActionPlan()
@@ -514,6 +566,23 @@ namespace IncidentUtility
                 }
             }
 
+        }
+
+
+        private async Task CheckDueActionPlanSafe()
+        {
+            if (_checkDueActionPlanSafe) return;
+            _checkDueActionPlanSafe = false;
+
+
+            try
+            {
+                await CheckDueActionPlan();
+            }
+            finally
+            {
+                _checkDueActionPlanSafe = false;
+            }
         }
 
         private async Task DueActionPlanMonitoring()
@@ -568,6 +637,22 @@ namespace IncidentUtility
                     }
                 });
 
+            }
+        }
+
+        private async Task DueActionPlanMonitoringSafe()
+        {
+            if (_dueActionPlanMonitoringSafe) return;
+            _dueActionPlanMonitoringSafe = false;
+
+
+            try
+            {
+                await DueActionPlanMonitoring();
+            }
+            finally
+            {
+                _dueActionPlanMonitoringSafe = false;
             }
         }
 
